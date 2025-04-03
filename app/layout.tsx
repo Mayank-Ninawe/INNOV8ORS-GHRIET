@@ -1,11 +1,16 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { ThemeProvider } from "@/components/theme-provider";
-import { Inter } from 'next/font/google';
+import { Inter, Source_Code_Pro } from 'next/font/google';
 
 const inter = Inter({ 
   subsets: ['latin'],
   variable: '--font-inter',
+});
+
+const sourceCodePro = Source_Code_Pro({
+  subsets: ['latin'],
+  variable: '--font-source-code-pro',
 });
 
 export const metadata: Metadata = {
@@ -19,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${sourceCodePro.variable}`}>
       <body className="font-sans">
         <ThemeProvider
           attribute="class"
