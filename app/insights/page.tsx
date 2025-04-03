@@ -9,7 +9,10 @@ import { ArrowLeft, Github, AlertCircle, LineChart, BarChart3, PieChart, Trophy,
 import Link from "next/link";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import Image from "next/image";
-import ReactECharts from 'echarts-for-react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import ECharts with no SSR to avoid hydration issues
+const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false });
 
 export default function InsightsPage() {
   const searchParams = useSearchParams();
@@ -26,8 +29,17 @@ export default function InsightsPage() {
 
   // Calculate insights when data is loaded
   const insights = useMemo(() => {
-    if (!contributors.length || !issues.length || !pullRequests.length) {
-      return null;
+    if (!contributors.length && !issues.length && !pullRequests.length) {
+      return {
+        topContributors: [],
+        prFrequency: "N/A",
+        avgResolutionTime: "N/A",
+        healthScore: 0,
+        openIssues: 0,
+        closedIssues: 0,
+        openPRs: 0,
+        closedPRs: 0
+      };
     }
 
     // 1. Most active contributors (ranked by contributions)
@@ -103,22 +115,48 @@ export default function InsightsPage() {
 
   // Chart options for contributors
   const contributorsChartOption = useMemo(() => {
-    if (!insights || !insights.topContributors) return {};
+    if (!insights || !insights.topContributors.length) return {};
     
     return {
       tooltip: {
-        trigger: 'item'
+        trigger: 'item',
+        formatter: '{b}: {c} contributions',
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        borderRadius: 8,
+        textStyle: {
+          color: '#fff'
+        }
       },
       xAxis: {
         type: 'category',
         data: insights.topContributors.map(c => c.login),
         axisLabel: {
           rotate: 45,
-          interval: 0
+          interval: 0,
+          color: '#888',
+          fontWeight: 500
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#ddd'
+          }
         }
       },
       yAxis: {
-        type: 'value'
+        type: 'value',
+        name: 'Contributions',
+        nameTextStyle: {
+          color: '#888',
+          fontWeight: 500
+        },
+        axisLabel: {
+          color: '#888'
+        },
+        splitLine: {
+          lineStyle: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        }
       },
       series: [
         {
@@ -126,7 +164,41 @@ export default function InsightsPage() {
           type: 'bar',
           data: insights.topContributors.map(c => c.contributions),
           itemStyle: {
-            color: '#3b82f6'
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: '#3b82f6' }, // Blue-500
+                { offset: 1, color: '#60a5fa' }  // Blue-400
+              ]
+            },
+            borderRadius: [4, 4, 0, 0]
+          },
+          emphasis: {
+            itemStyle: {
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  { offset: 0, color: '#2563eb' }, // Blue-600
+                  { offset: 1, color: '#3b82f6' }  // Blue-500
+                ]
+              }
+            }
+          },
+          label: {
+            show: true,
+            position: 'top',
+            formatter: '{c}',
+            fontSize: 12,
+            fontWeight: 'bold',
+            color: '#888'
           }
         }
       ]
@@ -139,11 +211,22 @@ export default function InsightsPage() {
     
     return {
       tooltip: {
-        trigger: 'item'
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)',
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        borderRadius: 8,
+        textStyle: {
+          color: '#fff'
+        }
       },
       legend: {
         top: '5%',
-        left: 'center'
+        left: 'center',
+        textStyle: {
+          color: '#888',
+          fontWeight: 500
+        },
+        itemGap: 20
       },
       series: [
         {
@@ -157,22 +240,43 @@ export default function InsightsPage() {
             borderWidth: 2
           },
           label: {
-            show: false,
-            position: 'center'
+            show: true,
+            position: 'outside',
+            formatter: '{b}: {c} ({d}%)',
+            color: '#888',
+            fontWeight: 'bold'
           },
           emphasis: {
             label: {
               show: true,
-              fontSize: 20,
-              fontWeight: 'bold'
+              fontSize: 16,
+              fontWeight: 'bold',
+              color: '#333'
+            },
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.2)'
             }
           },
           labelLine: {
-            show: false
+            show: true
           },
           data: [
-            { value: insights.openIssues, name: 'Open Issues', itemStyle: { color: '#ef4444' } },
-            { value: insights.closedIssues, name: 'Closed Issues', itemStyle: { color: '#22c55e' } }
+            { 
+              value: insights.openIssues, 
+              name: 'Open Issues', 
+              itemStyle: { 
+                color: '#f97316'  // Orange-500 for open issues
+              }
+            },
+            { 
+              value: insights.closedIssues, 
+              name: 'Closed Issues', 
+              itemStyle: { 
+                color: '#10b981'  // Emerald-500 for closed issues
+              }
+            }
           ]
         }
       ]
@@ -185,11 +289,23 @@ export default function InsightsPage() {
     
     return {
       tooltip: {
-        trigger: 'item'
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)',
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        borderRadius: 8,
+        textStyle: {
+          color: '#fff'
+        }
       },
       legend: {
         top: '5%',
-        left: 'center'
+        left: 'center',
+        textStyle: {
+          padding: [2, 4],
+          color: '#888',
+          fontWeight: 500
+        },
+        itemGap: 20
       },
       series: [
         {
@@ -203,22 +319,43 @@ export default function InsightsPage() {
             borderWidth: 2
           },
           label: {
-            show: false,
-            position: 'center'
+            show: true,
+            position: 'outside',
+            formatter: '{b}: {c} ({d}%)',
+            color: '#888',
+            fontWeight: 'bold'
           },
           emphasis: {
             label: {
               show: true,
-              fontSize: 20,
-              fontWeight: 'bold'
+              fontSize: 16,
+              fontWeight: 'bold',
+              color: '#333'
+            },
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.2)'
             }
           },
           labelLine: {
-            show: false
+            show: true
           },
           data: [
-            { value: insights.openPRs, name: 'Open PRs', itemStyle: { color: '#3b82f6' } },
-            { value: insights.closedPRs, name: 'Closed PRs', itemStyle: { color: '#8b5cf6' } }
+            { 
+              value: insights.openPRs, 
+              name: 'Open PRs', 
+              itemStyle: { 
+                color: '#6366f1'  // Indigo-500 for open PRs
+              }
+            },
+            { 
+              value: insights.closedPRs, 
+              name: 'Closed PRs', 
+              itemStyle: { 
+                color: '#8b5cf6'  // Purple-500 for closed PRs
+              }
+            }
           ]
         }
       ]
@@ -397,6 +534,9 @@ export default function InsightsPage() {
                   <span className="ml-auto text-muted-foreground">{contributor.contributions}</span>
                 </div>
               ))}
+              {(!insights.topContributors || insights.topContributors.length === 0) && (
+                <p className="text-center text-muted-foreground">No contributor data available</p>
+              )}
             </Card>
 
             <Card className="p-6 flex flex-col">
@@ -446,34 +586,52 @@ export default function InsightsPage() {
 
           {/* Charts Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden hover:shadow-md transition-shadow bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950/30">
               <div className="flex items-center gap-4 mb-4">
                 <BarChart3 className="h-6 w-6 text-blue-500" />
                 <h3 className="text-xl font-semibold">Top Contributors</h3>
               </div>
               <div className="h-80">
-                <ReactECharts option={contributorsChartOption} style={{ height: '100%' }} />
+                {insights.topContributors.length > 0 ? (
+                  <ReactECharts option={contributorsChartOption} style={{ height: '100%', width: '100%' }} />
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-muted-foreground">No contributor data available</p>
+                  </div>
+                )}
               </div>
             </Card>
 
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden hover:shadow-md transition-shadow bg-gradient-to-br from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/30">
               <div className="flex items-center gap-4 mb-4">
-                <PieChart className="h-6 w-6 text-green-500" />
+                <PieChart className="h-6 w-6 text-orange-500" />
                 <h3 className="text-xl font-semibold">Issues</h3>
               </div>
               <div className="h-80">
-                <ReactECharts option={issuesChartOption} style={{ height: '100%' }} />
+                {(insights.openIssues > 0 || insights.closedIssues > 0) ? (
+                  <ReactECharts option={issuesChartOption} style={{ height: '100%', width: '100%' }} />
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-muted-foreground">No issue data available</p>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
 
-          <Card className="p-6 mb-8">
+          <Card className="p-6 mb-8 overflow-hidden hover:shadow-md transition-shadow bg-gradient-to-br from-white to-purple-50 dark:from-gray-900 dark:to-purple-950/30">
             <div className="flex items-center gap-4 mb-4">
-              <LineChart className="h-6 w-6 text-purple-500" />
+              <LineChart className="h-6 w-6 text-indigo-500" />
               <h3 className="text-xl font-semibold">Pull Requests</h3>
             </div>
             <div className="h-80">
-              <ReactECharts option={pullRequestsChartOption} style={{ height: '100%' }} />
+              {(insights.openPRs > 0 || insights.closedPRs > 0) ? (
+                <ReactECharts option={pullRequestsChartOption} style={{ height: '100%', width: '100%' }} />
+              ) : (
+                <div className="h-full flex items-center justify-center">
+                  <p className="text-muted-foreground">No pull request data available</p>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -507,7 +665,7 @@ export default function InsightsPage() {
               
               {repoHealth >= 50 && repoHealth < 80 && (
                 <p>
-                  📈 This repository is in good health, but there&s room for improvement. Focus on maintaining consistent contribution patterns.
+                  📈 This repository is in good health, but there&apos;s room for improvement. Focus on maintaining consistent contribution patterns.
                 </p>
               )}
               
