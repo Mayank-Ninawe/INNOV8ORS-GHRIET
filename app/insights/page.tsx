@@ -10,6 +10,7 @@ import Link from "next/link";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import Image from "next/image";
 import dynamic from 'next/dynamic';
+import { RepositoryLoader } from "@/components/ui/repository-loader";
 
 // Dynamically import ECharts with no SSR to avoid hydration issues
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false });
@@ -394,14 +395,7 @@ export default function InsightsPage() {
   }, [owner, repo]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-lg">Generating repository insights...</p>
-        </div>
-      </div>
-    );
+    return <RepositoryLoader message="Generating repository insights..." />;
   }
 
   if (error) {
@@ -629,7 +623,7 @@ export default function InsightsPage() {
                 <ReactECharts option={pullRequestsChartOption} style={{ height: '100%', width: '100%' }} />
               ) : (
                 <div className="h-full flex items-center justify-center">
-                  <p className="text-muted-foreground">No pull request data available</p>
+                    <p className="text-muted-foreground">No pull request data available</p>
                 </div>
               )}
             </div>

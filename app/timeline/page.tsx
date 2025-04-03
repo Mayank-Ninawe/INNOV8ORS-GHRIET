@@ -10,6 +10,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import { Meteors } from "@/components/ui/meteors";
+import { RepositoryLoader } from "@/components/ui/repository-loader";
 
 export default function TimelinePage() {
   const searchParams = useSearchParams();
@@ -137,14 +138,7 @@ export default function TimelinePage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-lg">Generating your repository story...</p>
-        </div>
-      </div>
-    );
+    return <RepositoryLoader message="Generating your repository story..." />;
   }
 
   if (error) {

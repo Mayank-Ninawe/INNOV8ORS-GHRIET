@@ -9,6 +9,7 @@ import { ArrowLeft, AlertCircle, BarChart3, Users } from "lucide-react";
 import Link from "next/link";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import Image from "next/image";
+import { RepositoryLoader } from "@/components/ui/repository-loader";
 
 export default function InsightsFallback() {
   const searchParams = useSearchParams();
@@ -45,14 +46,7 @@ export default function InsightsFallback() {
   }, [owner, repo]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-lg">Loading repository data...</p>
-        </div>
-      </div>
-    );
+    return <RepositoryLoader message="Loading repository data..." />;
   }
 
   if (error) {

@@ -9,11 +9,13 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import { Meteors } from "@/components/ui/meteors";
+import { RepositoryLoader } from "@/components/ui/repository-loader";
 
 export default function Home() {
   const [repoUrl, setRepoUrl] = useState("");
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const validateGithubUrl = (url: string) => {
@@ -53,6 +55,9 @@ export default function Home() {
     
     const repoInfo = extractRepoInfo(repoUrl);
     if (repoInfo) {
+      // Show loading state
+      setIsLoading(true);
+      
       // Redirect to timeline page with repo info
       router.push(`/timeline?owner=${repoInfo.owner}&repo=${repoInfo.repo}`);
     }
@@ -93,6 +98,10 @@ export default function Home() {
       description: "Machine learning platform for everyone"
     }
   ];
+
+  if (isLoading) {
+    return <RepositoryLoader message="Preparing to generate your repository story..." />;
+  }
 
   return (
     <main className="min-h-screen">
