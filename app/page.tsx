@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Github, Sparkles, Code, ExternalLink, Users } from "lucide-react";
+import { Github, Sparkles, Code, ExternalLink, Users, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
+import { Meteors } from "@/components/ui/meteors";
 
 export default function Home() {
   const [repoUrl, setRepoUrl] = useState("");
@@ -16,16 +17,20 @@ export default function Home() {
   const router = useRouter();
 
   const validateGithubUrl = (url: string) => {
-    // Basic GitHub URL validation regex
-    const githubRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/;
+    // Enhanced GitHub URL validation regex that handles www and .git suffix
+    const githubRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+(\.git)?\/?$/;
     return githubRegex.test(url);
   };
 
   const extractRepoInfo = (url: string) => {
-    // Extract owner and repo name from URL
-    const match = url.match(/github\.com\/([\w-]+)\/([\w.-]+)/);
+    // Extract owner and repo name from URL, handling .git suffix
+    const match = url.match(/github\.com\/([\w-]+)\/([\w.-]+)(\.git)?\/?/);
     if (match) {
-      return { owner: match[1], repo: match[2] };
+      return { 
+        owner: match[1],
+        // Remove .git suffix if present
+        repo: match[2] 
+      };
     }
     return null;
   };
@@ -59,6 +64,10 @@ export default function Home() {
 
   const handleDirectContributorsView = (owner: string, repo: string) => {
     router.push(`/contributors?owner=${owner}&repo=${repo}`);
+  };
+
+  const handleDirectInsightsView = (owner: string, repo: string) => {
+    router.push(`/insights?owner=${owner}&repo=${repo}`);
   };
 
   const exampleRepos = [
@@ -103,7 +112,7 @@ export default function Home() {
             </h1>
             
             <p className="text-xl text-muted-foreground mb-12">
-              Visualize your repository's journey through an interactive narrative.
+              Visualize your repository journey through an interactive narrative.
               See the characters, plot twists, and development of your codebase.
             </p>
 
@@ -133,25 +142,34 @@ export default function Home() {
               <h2 className="text-2xl font-semibold mb-6">Try with these examples</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {exampleRepos.map((repo) => (
-                  <Card key={repo.name} className="p-6 flex flex-col h-full hover:shadow-md transition-shadow bg-white/80 dark:bg-black/50 backdrop-blur-sm border-0">
-                    <h3 className="font-semibold text-lg mb-2">{repo.name}</h3>
-                    <p className="text-sm text-muted-foreground flex-grow mb-4">
+                  <Card key={repo.name} className="relative p-6 flex flex-col h-full hover:shadow-md transition-shadow bg-white/80 dark:bg-black/50 backdrop-blur-sm border-0 overflow-hidden">
+                    <h3 className="font-semibold text-lg mb-2 relative z-10">{repo.name}</h3>
+                    <p className="text-sm text-muted-foreground flex-grow mb-4 relative z-10">
                       {repo.description}
                     </p>
-                    <div className="flex gap-2 mt-auto">
+                    <div className="flex flex-col gap-2 mt-auto relative z-10">
+                      <div className="flex gap-2">
+                        <Button 
+                          className="flex-1 flex items-center justify-center gap-2"
+                          onClick={() => handleDemoClick(repo.url)}
+                        >
+                          Story <ExternalLink className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          className="flex-1 flex items-center justify-center gap-2 bg-background/80 text-foreground border border-input hover:bg-accent hover:text-accent-foreground backdrop-blur-sm"
+                          onClick={() => handleDirectContributorsView(repo.owner, repo.repo)}
+                        >
+                          Contributors <Users className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <Button 
-                        className="flex-1 flex items-center justify-center gap-2"
-                        onClick={() => handleDemoClick(repo.url)}
+                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600"
+                        onClick={() => handleDirectInsightsView(repo.owner, repo.repo)}
                       >
-                        Story <ExternalLink className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        className="flex-1 flex items-center justify-center gap-2 bg-background/80 text-foreground border border-input hover:bg-accent hover:text-accent-foreground backdrop-blur-sm"
-                        onClick={() => handleDirectContributorsView(repo.owner, repo.repo)}
-                      >
-                        Contributors <Users className="h-4 w-4" />
+                        Insights & Analytics <BarChart3 className="h-4 w-4" />
                       </Button>
                     </div>
+                    <Meteors number={10} />
                   </Card>
                 ))}
               </div>
