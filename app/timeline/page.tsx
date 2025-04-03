@@ -12,7 +12,9 @@ import {
   MessageSquare,
   Filter,
   Loader2,
-  Users
+  Users,
+  TrendingUp,
+  Trophy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -201,6 +203,18 @@ export default function Timeline() {
               <Link href={`/sentiment?owner=${owner}&repo=${repo}`}>
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Code Mood
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href={`/predictions?owner=${owner}&repo=${repo}`}>
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Predictions
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href={`/achievements?owner=${owner}&repo=${repo}`}>
+                <Trophy className="h-4 w-4 mr-2" />
+                Achievements
               </Link>
             </Button>
             <Button className="bg-background text-foreground border border-input hover:bg-accent hover:text-accent-foreground" onClick={() => window.history.back()}>
