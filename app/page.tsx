@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Github, Sparkles, Code, ExternalLink, Users, BarChart3 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Github, Sparkles, Code, ExternalLink, Users, BarChart3, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -10,13 +10,19 @@ import { cn } from "@/lib/utils";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import { Meteors } from "@/components/ui/meteors";
 import { RepositoryLoader } from "@/components/ui/repository-loader";
+import { getRepoStats } from "@/lib/github-api";
 
 export default function Home() {
   const [repoUrl, setRepoUrl] = useState("");
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [starCount, setStarCount] = useState<number | null>(null);
   const router = useRouter();
+
+  // Repository owner and name for the "Star Us" button
+  const repoOwner = "Mayank-Ninawe";
+  const repoName = "INNOV8ORS-GHRIET";
 
   const validateGithubUrl = (url: string) => {
     // Enhanced GitHub URL validation regex that handles www and .git suffix
@@ -99,6 +105,21 @@ export default function Home() {
     }
   ];
 
+  // Fetch repository star count for the "Star Us" button
+  useEffect(() => {
+    const fetchStarCount = async () => {
+      try {
+        const stats = await getRepoStats(repoOwner, repoName);
+        setStarCount(stats.stargazers_count);
+      } catch (error) {
+        console.error("Error fetching star count:", error);
+        // Don't set an error state to keep the UI clean
+      }
+    };
+    
+    fetchStarCount();
+  }, [repoOwner, repoName]);
+
   if (isLoading) {
     return <RepositoryLoader message="Preparing to generate your repository story..." />;
   }
@@ -106,6 +127,25 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <BackgroundBeamsWithCollision className="min-h-screen h-full pb-24">
+        {/* Star Us Button - Fixed Position */}
+        <div className="absolute top-4 right-4 z-20">
+          <a 
+            href={`https://github.com/${repoOwner}/${repoName}`}
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 bg-black text-yellow-400 text-sm font-medium py-1.5 px-3 rounded-full border border-yellow-400 hover:bg-yellow-400 hover:text-black transition-colors duration-200"
+          >
+            <Star className="h-3.5 w-3.5" />
+            <span>Star Us</span>
+            {starCount !== null && (
+              <>
+                <span className="mx-0.5">•</span>
+                <span className="font-semibold">{starCount.toLocaleString()}</span>
+              </>
+            )}
+          </a>
+        </div>
+        
         {/* Hero Section */}
         <div className="container mx-auto px-4 py-16 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
