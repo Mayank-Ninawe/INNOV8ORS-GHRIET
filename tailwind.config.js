@@ -55,9 +55,9 @@ module.exports = {
                 lg: "var(--radius)",
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
-            },
-            animation: {
+            }, animation: {
                 "meteor-effect": "meteor 5s linear infinite",
+                "aurora": "aurora 8s ease-in-out infinite alternate",
             },
             keyframes: {
                 meteor: {
@@ -67,6 +67,13 @@ module.exports = {
                         transform: "rotate(45deg) translateX(-1000px)",
                         opacity: 0,
                     },
+                },
+                aurora: {
+                    "0%": { backgroundPosition: "0% 50%", transform: "rotate(-5deg) scale(0.9)" },
+                    "25%": { backgroundPosition: "50% 100%", transform: "rotate(5deg) scale(1.1)" },
+                    "50%": { backgroundPosition: "100% 50%", transform: "rotate(-3deg) scale(0.95)" },
+                    "75%": { backgroundPosition: "50% 0%", transform: "rotate(3deg) scale(1.05)" },
+                    "100%": { backgroundPosition: "0% 50%", transform: "rotate(-5deg) scale(0.9)" },
                 },
             },
         },
